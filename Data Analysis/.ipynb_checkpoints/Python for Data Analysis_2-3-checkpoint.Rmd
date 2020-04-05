@@ -169,6 +169,10 @@ x = 5
 
 # Chapter 3 Built-in Data Structires, Functions, and Files
 
-```{python}
 
+## 3.1 Data Structures and Sequences
+
+```{python}
+# Tuple: fixed length, immutable
+tup
 ```
