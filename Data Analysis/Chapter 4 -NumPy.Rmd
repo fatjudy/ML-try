@@ -12,14 +12,11 @@ jupyter:
     name: python3
 ---
 
-#### Numpy, short for numerical python, is one of the most important foundational packages for numerical computing
-
-
-# 4.1 NumPy ndarray
-
 ```{python}
 import numpy as np
 ```
+
+# 4.1 NumPy ndarray
 
 ```{python}
 # Generate some random data
@@ -89,17 +86,6 @@ np.arange(16) # from 0 to 15 (including 15)
 ```
 
 ```{python}
-np.eye((3))
-```
-
-### Data Types for ndarrays
-
-```{python}
-arr1 = np.array([1,2,3], dtype = np.float64)
-arr1
-```
-
-```{python}
 # array of strings to numbers
 # use the astype() function to convert
 numeric_strings = np.array(['1.25', '-9.6', '42'], dtype=np.string_)
@@ -107,6 +93,7 @@ numeric_strings.astype(float)
 ```
 
 ## Arithmetic with NumPy Arrays
+
 
 ```{python}
 # +, - , *, /, **, >, <, == and so on can be applied to equal-size arrays element-wise
@@ -179,6 +166,7 @@ old_values
 
 ## Indexing with slicess
 
+
 ```{python}
 arr2d
 ```
@@ -200,6 +188,7 @@ arr2d[:2,2]
 ```
 
 ## Boolean Indexing
+
 
 ```{python}
 names = np.array(['Bob', 'Joe', 'Will', 'Bob', 'Will', 'Joe', 'Joe'])
@@ -239,9 +228,389 @@ data
 
 ### Fancy Indexing
 
+
 ```{python}
-arr = np.empty((7, 4))
+arr = np.empty((8, 4))
 arr
+```
+
+```{python}
+for i in range(8):
+    arr[i] = i
+arr
+```
+
+```{python}
+# To choose some desired rows: pass a list or ndarray of integers specifying the desired orders
+arr[[4,3,0,6]]
+```
+
+```{python}
+# Use negative value to select from the end: the end starts from 1 not 0
+arr[[-3, -5, -7]]
+```
+
+```{python}
+# Pass multiple index arrays:
+arr = np.arange(32).reshape(8,4)
+arr
+```
+
+```{python}
+arr[[1,5,7,2],[0,3,1,2,]] # Choose line 1, column 0; and line 5 column 3 .......
+```
+
+```{python}
+arr[[1, 5, 7, 2]][:, [0, 3, 1, 2]] # Choose line 2 and columns 0,3,1,2; ......
+```
+
+### Transposing Arrays and Swapping Axes
+
+
+```{python}
+# Transpose
+arr.T
+```
+
+```{python}
+# inner matrix product: np.dot
+np.dot(arr.T,arr)
+```
+
+```{python}
+arr = np.arange(16).reshape((2,2,4))
+```
+
+```{python}
+arr.T
+```
+
+```{python}
+arr.transpose((1,0,2)) # Row 1 come to row 0, row 0 come to row 1, row 2 stay at row 2
+```
+
+## 4.2 Universal Functions
+
+```{python}
+# Universal function (ufunc) is a function that performs element-wise operations on data in ndarrays. 
+"""
+np.sqrt()  # arr ** 0.5
+np.square()  # arr ** 2
+np.exp()
+np.maximum()
+np.add()
+"""
+```
+
+```{python}
+# np.modf: returns integral and floating-point of an array:
+arr = np.random.randn(7) * 5
+arr
+```
+
+```{python}
+remainder, whole_part = np.modf(arr)
+remainder
+```
+
+## 4.3 Array-Oriented Programming with Arrays
+
+```{python}
+# Vectorization: replacing explicit loops with array expressions 
+points = np.arange(-5,5,0.01)
+points.shape
+```
+
+```{python}
+xs, ys = np.meshgrid(points, points)
+print(xs) # use "points" as on row and repeat 1000 times 
+print(xs.shape)
+print(ys) # use "points" as on column and repeat 1000 times 
+print(ys.shape)
+```
+
+```{python}
+z = np.sqrt(xs ** 2 + ys ** 2)
+z
+```
+
+```{python}
+import matplotlib.pyplot as plt
+plt.imshow(z, cmap=plt.cm.gray); plt.colorbar()
+plt.title("Image plot of $\sqrt{x^2 + y^2}$ for a grid of values")
+```
+
+### Expressiong Conditional Logic as Array Operations
+
+```{python}
+# np.where(): vectorized version of the expression x if nodition else y
+# np.where (condition, x, y)
+```
+
+```{python}
+xarr = np.array([1.1, 1.2, 1.3, 1.4, 1.5])
+yarr = np.array([2.1, 2.2, 2.3, 2.4, 2.5])
+cond = np.array([True, False, True, True, False])
+```
+
+```{python}
+result = [(x if c else y) for x, y, c in zip (xarr, yarr, cond)]
+result
+```
+
+```{python}
+# Equivalately: 
+result_where = np.where (cond, xarr, yarr)
+result_where
+```
+
+```{python}
+# Another example:
+arr = np.random.randn(4,4)
+sub = np.where(arr > 0, 2, -2)
+sub
+```
+
+```{python}
+# or
+np.where(arr > 0, 2, arr)
+```
+
+### Mathematical and Statistical Methods
+
+```{python}
+arr = np.random.randn(5,4)
+arr
+```
+
+```{python}
+arr.mean()
+```
+
+```{python}
+arr.std()
+```
+
+```{python}
+arr.mean(axis = 1) # Calculate each row
+```
+
+```{python}
+arr.mean(axis = 0) # Calculate each column
+```
+
+```{python}
+# cumsum() and cumprod()
+arr = np.array([0,1,2,3,4,5,6,7])
+np.cumsum(arr)
+```
+
+```{python}
+arr = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
+arr
+```
+
+```{python}
+arr.cumprod(axis = 0)
+```
+
+```{python}
+arr.cumprod(axis = 1)
+```
+
+### Method for Boolean Arrays
+
+```{python}
+arr = np.random.randn(100)
+(arr > 0).sum()
+```
+
+```{python}
+# any() and all()
+bools = np.array([False, True, True, False, True])
+bools.any()
+```
+
+```{python}
+bools.all()
+```
+
+### Sorting
+
+```{python}
+arr = np.random.randn(7)
+arr.sort() # rank from small to big
+arr
+```
+
+```{python}
+arr = np.random.randn(5,3)
+arr
+```
+
+```{python}
+arr.sort(1) # sort according to each row
+arr
+```
+
+### Unique and Other Set Logic
+
+```{python}
+names = np.array(['Bob', 'Joe', 'Will', 'Bob', 'Will', 'Joe', 'Joe'])
+```
+
+```{python}
+np.unique(names)
+```
+
+```{python}
+sorted(names)
+```
+
+```{python}
+sorted(set(names))
+```
+
+```{python}
+# np.in1d(values,value): check whether value in values
+values = np.array([6,0,0,2,3,5,8,6])
+np.in1d(values,[2,8])
+```
+
+## 4.4 File Input and Output with Arrays
+
+```{python}
+# Skip
+```
+
+## 4.5 Linear Algebra
+
+```{python}
+x = np.array([[1., 2., 3.], [4., 5., 6.]])
+y = np.array([[6., 23.], [-1, 7], [8, 9]])
+x.dot(y) # matrix production
+```
+
+```{python}
+# numpy.linalg: standard set of matrix decompositions
+from numpy.linalg import inv, qr
+```
+
+```{python}
+X = np.random.randn(5,5)
+mat = X.T.dot(X)
+mat
+```
+
+```{python}
+inv(mat)
+```
+
+```{python}
+q, r = qr(mat)
+print(q)
+
+```
+
+## 4.6 Pseudorandom Number Generation
+
+```{python}
+# Generate sample from a normal distribution
+samples = np.random.normal(size = (4,4))
+samples
+```
+
+```{python}
+# Better way to do this:
+from random import normalvariate
+```
+
+```{python}
+N = 1000000
+# %timeit samples = [normalvariate(0,1) for _ in range(N)] # faster
+# %timeit np.random.normal(size=N)
+```
+
+```{python}
+# change seeds
+np.random.seed(1212)
+```
+
+```{python}
+"""
+numpy.random use a global random seed. To avoid
+global state, you can use numpy.random.RandomState to create a random number
+generator isolated from others:
+
+"""
+rng = np.random.RandomState(1234)
+rng.randn(10)
+```
+
+## 4.7 Example: Random Walks
+
+```{python}
+import random
+```
+
+```{python}
+position = 0 # start from 0
+walk = [position] # where the point is in each step
+steps = 1000 # total steps
+for i in range(steps):
+    step = 1 if random.randint(0,1) else -1 # 50% chance 1, 50% chance -1
+    position += step # from previous position, walk one step further (can be 1 or -1)
+    walk.append(position) # append the new position to the walk, which is a list
+```
+
+```{python}
+plt.plot(walk)
+```
+
+```{python}
+# Find the step where we first get a value larger than 10 or smaller than -10
+(np.abs(walk) >= 10).argmax()
+```
+
+```{python}
+nsteps = 1000
+draws = np.random.randint(0,2,size = nsteps)
+steps = np.where(draws > 0, 1, -1)
+walk_1 = steps.cumsum()
+plt.plot(walk_1)
+```
+
+### Simulating Many Random Walks at Once
+
+```{python}
+nwalks = 5000
+nsteps = 1000
+draws = np.random.randint(0,2,size = (nwalks, nsteps))
+```
+
+```{python}
+steps = np.where(draws > 0, 1, -1)
+walks = steps.cumsum(1) # add each row up
+walks
+```
+
+```{python}
+# Check how many of them hits 30 and when that happens
+hit30 = (np.abs(walks) >= 30).any(1) # 5000 boolean values
+hit30.sum()
+```
+
+```{python}
+crossing_time = np.abs(walks[hit30] >= 30).argmax(1)
+```
+
+```{python}
+crossing_time.mean()
+```
+
+```{python}
+# Generate random numbers from normal distribution
+steps = np.random.normal(loc=0, scale=0.25,size=(nwalks, nsteps))
 ```
 
 ```{python}
