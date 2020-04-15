@@ -1,0 +1,102 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# Chapter 7 Data Cleaning and Preparation
+
+
+## 7.1 Handling Missing Data
+
+```{python}
+import pandas as pd
+import numpy as np
+```
+
+```{python}
+string_data = pd.Series(['aardvark', 'artichoke', np.nan, 'avocado'])
+```
+
+```{python}
+string_data.isnull()
+```
+
+```{python}
+string_data.dropna()
+```
+
+```{python}
+string_data
+```
+
+### Filtering Out Missing Data
+
+```{python}
+from numpy import nan as NA
+```
+
+```{python}
+data = pd.Series([1, NA, 3.5, NA, 7])
+```
+
+```{python}
+data.dropna()
+```
+
+```{python}
+data[data.notnull()]
+```
+
+```{python}
+data = pd.DataFrame([[1., 6.5, 3.], [1., NA, NA],
+....: [NA, NA, NA], [NA, 6.5, 3.]])
+```
+
+```{python}
+cleaned = data.dropna()
+```
+
+```{python}
+data.dropna(how = 'all') # only drop rows with all elements na
+```
+
+```{python}
+data[4] = NA
+data
+```
+
+```{python}
+data.dropna(how = 'all', axis = 1)
+```
+
+```{python}
+# Drop rows/columns with certain number of NAs: thresh
+df = pd.DataFrame(np.random.randn(7,3))
+df.iloc[:4,1] = NA
+df.iloc[:2,2] = NA
+df
+```
+
+```{python}
+df.dropna(thresh = 2) # Cannnot be used for column??
+```
+
+### Filling in Missing Data
+
+```{python}
+# fill with 0
+df.fillna(0)
+```
+
+```{python}
+
+```
