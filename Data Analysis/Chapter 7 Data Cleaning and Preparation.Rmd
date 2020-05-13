@@ -127,6 +127,478 @@ df.fillna(method = 'ffill', limit = 2)
 df.fillna(df.mean()) # fill using the column mean
 ```
 
+## 7.2 Data Transformation
+
+```{python}
+data = pd.DataFrame({'k1': ['one', 'two'] * 3 + ['two'], 'k2': [1,1,2,3,3,4,4]})
+data
+```
+
+```{python}
+# return duplicated rows
+data.duplicated()
+```
+
+```{python}
+data.drop_duplicates()
+```
+
+```{python}
+data['v1'] = range(7)
+data
+```
+
+```{python}
+data.drop_duplicates(['k1'], keep = 'last')
+```
+
+```{python}
+data.drop_duplicates(['k1', 'k2'], keep = 'last')
+```
+
+### Transforming Data Using a Function or Mapping
+
+```{python}
+data = pd.DataFrame({'food':['bacon', 'pulled pork', 'bacon', 'Pastrami', 'corned beef', 'Bacon', 'pastrami', 
+                            'honey ham', 'nova lox'], 
+                   'ounces':[4,3,12,6,7.5, 8, 3, 5, 6]})
+```
+
+```{python}
+data
+```
+
+```{python}
+meat_to_animal = {
+    'bacon': 'pig', 'pulled pork': 'pig', 'pastrami': 'cow',
+    'corned beef': 'cow', 'honey ham': 'pig', 'nova lox': 'salmon'
+}
+```
+
+```{python}
+# lower case 
+lowercased = data['food'].str.lower()
+lowercased
+```
+
+```{python}
+# Add a new column to store the animal type
+data['animal'] = lowercased.map(meat_to_animal)
+```
+
+```{python}
+data
+```
+
+```{python}
+# We can combine lower case and map together:
+data['food'].map(lambda x: meat_to_animal[x.lower()])
+```
+
+### Replacing values
+
+```{python}
+data = pd.Series([1., -999., 2., -999., -1000., 3.])
+```
+
+```{python}
+data
+```
+
+```{python}
+data.replace(-999, np.nan)
+```
+
+```{python}
+data.replace([-999, -1000], np.nan)
+```
+
+```{python}
+data.replace([-999, -1000], [np.nan, 0])
+```
+
+```{python}
+data.replace({-999: np.nan, -1000: 0})
+```
+
+### Renaming Axis Indexes
+
+```{python}
+data = pd.DataFrame(np.arange(12).reshape((3, 4)), 
+                    index=['Ohio', 'Colorado', 'New York'], 
+                    columns=['one', 'two', 'three', 'four'])
+```
+
+```{python}
+data
+```
+
+```{python}
+transform = lambda x: x[:4].upper()
+```
+
+```{python}
+data.index = data.index.map(transform)
+```
+
+```{python}
+data
+```
+
+```{python}
+data.rename(index=str.title, columns=str.upper)
+```
+
+```{python}
+data.rename(index=str.upper, columns=str.title)
+```
+
+```{python}
+data.rename(index = {'OHIO': 'INDIANA'}, columns = {'three': 'peekaboo'})
+```
+
+```{python}
+data.rename(index = {'OHIO': 'INDIANA'}, inplace = True)
+```
+
+```{python}
+data
+```
+
+### Discretization and Binning
+
+```{python}
+ages = [20, 22, 25, 27, 21, 23, 37, 31, 61, 45, 41, 32]
+```
+
+```{python}
+bins = [18, 25, 35, 60, 100]
+```
+
+```{python}
+cats = pd.cut(ages, bins)
+```
+
+```{python}
+cats
+```
+
+```{python}
+# cats here is an categorical object
+cats.codes
+```
+
+```{python}
+cats.categories
+```
+
+```{python}
+pd.value_counts(cats)
+```
+
+```{python}
+pd.cut(ages, [18, 26, 36, 61, 100], right=False)
+```
+
+```{python}
+group_names = ['Youth', 'YoungAdult', 'MiddleAged', 'Senior']
+```
+
+```{python}
+pd.cut(ages, bins, labels = group_names)
+```
+
+```{python}
+# If you pass an integer number of bins to cut instead of explicit bin edges, it will com‐pute equal-length bins based on the minimum and maximum values in the data
+data = np.random.rand(20)
+```
+
+```{python}
+pd.cut(data, 4, precision = 2)
+```
+
+```{python}
+# 'qcut' bins the data based on sample quantiles.
+data = np.random.randn(1000)
+```
+
+```{python}
+cats = pd.qcut(data, 4)
+```
+
+```{python}
+cats
+```
+
+```{python}
+pd.value_counts(cats)
+```
+
+```{python}
+# my own quantiles
+pd.qcut(data, [0, 0.1, 0.5, 0.9, 1.])
+```
+
+### Detecting and Filtering Outliers
+
+```{python}
+data = pd.DataFrame(np.random.randn(1000, 4))
+```
+
+```{python}
+data.describe()
+```
+
+```{python}
+data[2][np.abs(col)>3]
+```
+
+```{python}
+data[(np.abs(data)>3).any(1)]
+```
+
+```{python}
+data[np.abs(data)>3] = np.sign(data) * 3
+```
+
+```{python}
+data.describe()
+```
+
+```{python}
+np.sign(data).head()
+```
+
+### Permutation and Random Sampling
+
+```{python}
+df = pd.DataFrame(np.arange(5 * 4).reshape((5, 4)))
+df
+```
+
+```{python}
+sampler = np.random.permutation(5)
+```
+
+```{python}
+sampler
+```
+
+```{python}
+df.take(sampler)
+```
+
+```{python}
+# To choose a random subset, without replacement:
+df.sample(n=3)
+```
+
+```{python}
+# Subset with replacement:
+choices = pd.Series([5, 7, -1, 6, 4])
+draws = choices.sample(n=10, replace=True)
+```
+
+```{python}
+draws
+```
+
+### Computing Indicator/Dummy Variables
+
+```{python}
+df = pd.DataFrame({'key': ['b', 'b', 'a', 'c', 'a', 'b'], 
+                  'data1': range(6)})
+```
+
+```{python}
+df
+```
+
+```{python}
+pd.get_dummies(df['key'])
+```
+
+```{python}
+dummies = pd.get_dummies(df['key'], prefix='key')
+dummies
+```
+
+```{python}
+df_with_dummy = df[['data1']].join(dummies)
+```
+
+```{python}
+df_with_dummy
+```
+
+## 7.3 String Manipulation
+
+```{python}
+val = 'a,b,  guido'
+```
+
+```{python}
+val.split(',')
+```
+
+```{python}
+# strip to trim whitespace
+pieces = [x.strip() for x in val.split(',')]
+```
+
+```{python}
+pieces
+```
+
+```{python}
+first, second, third = pieces
+```
+
+```{python}
+# substrings could be concatenated together with a two-colon delimiter using addition
+first + '::' + second + '::' + third
+```
+
+```{python}
+first  + second + third
+```
+
+```{python}
+':'.join(pieces)
+```
+
+```{python}
+val.find(':') # -1 means string not found
+```
+
+```{python}
+val.count(',')
+```
+
+```{python}
+val.replace(',', 'I am comma')
+```
+
+### Regular Expressions
+
+
+#### The re module functions fall into three categories: pattern matching, substitution, and splitting
+
+
+```{python}
+import re
+```
+
+```{python}
+text = "foo   bar\t baz  \tqux"
+```
+
+```{python}
+re.split('\s+', text)
+```
+
+```{python}
+regex = re.compile('\s+')
+```
+
+```{python}
+regex.split(text)
+```
+
+```{python}
+regex.findall(text)
+```
+
+```{python}
+text = """Dave dave@google.com
+Steve steve@gmail.com
+Rob rob@gmail.com
+Ryan ryan@yahoo.com
+fatjodie0510@yahoo.com Judy's email
+"""
+```
+
+```{python}
+pattern = r'[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
+# pattern = r'[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
+```
+
+```{python}
+regex = re.compile(pattern, flags = re.IGNORECASE)
+```
+
+```{python}
+regex.findall(text)
+```
+
+```{python}
+m = regex.search(text)
+```
+
+```{python}
+m
+```
+
+```{python}
+text[m.start():m.end()]
+```
+
+```{python}
+# regex.match returns None, as it only will match if the pattern occurs at the start of the string
+print(regex.match(text))
+```
+
+```{python}
+# sub will return a new string with occurrences of the pattern replaced by the a new string:
+print(regex.sub('email', text))
+```
+
+```{python}
+pattern = r'([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,4})'
+```
+
+```{python}
+regex = re.compile(pattern, flags = re.IGNORECASE)
+```
+
+```{python}
+m = regex.match('wesm@gright.met')
+```
+
+```{python}
+m.groups()
+```
+
+```{python}
+regex.findall(text)
+```
+
+```{python}
+print(regex.sub(r'Username: \1, Domain: \2, Suffix: \3', text))
+```
+
+### Vectorized String Functions in pandas
+
+```{python}
+data = {'Dave': 'dave@google.com', 'Steve': 'steve@gmail.com', 'Rob': 'rob.yahoo.com', 'Wes': np.nan}
+```
+
+```{python}
+data = pd.Series(data)
+```
+
+```{python}
+data
+```
+
+```{python}
+data.str.contains('gmail')
+```
+
+```{python}
+data.str[:7]
+```
+
 ```{python}
 
 ```

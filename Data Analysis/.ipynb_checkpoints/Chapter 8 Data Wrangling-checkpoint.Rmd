@@ -12,10 +12,15 @@ jupyter:
     name: python3
 ---
 
-# Chapter 7 Data Cleaning and Preparation
+```{python}
+import pandas as pd
+import numpy as np
+```
+
+# Data Wrangling: Join, Combine, and Reshape
 
 
-## 7.1 Handling Missing Data
+## 8.1 Hierarchical Indexing
 
 ```{python}
 
