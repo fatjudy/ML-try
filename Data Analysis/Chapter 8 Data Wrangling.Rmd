@@ -268,5 +268,509 @@ pd.merge(left1, right1, left_on = 'key', right_index=True) # Don't understand
 ```
 
 ```{python}
+pd.merge(left1, right1, left_on='key', right_index=True, how='outer')
+```
+
+```{python}
+lefth = pd.DataFrame({'key1': ['Ohio', 'Ohio', 'Ohio',
+....: 'Nevada', 'Nevada'],
+....: 'key2': [2000, 2001, 2002, 2001, 2002],
+....: 'data': np.arange(5.)})
+```
+
+```{python}
+lefth
+```
+
+```{python}
+righth = pd.DataFrame(np.arange(12).reshape((6, 2)),
+....: index=[['Nevada', 'Nevada', 'Ohio', 'Ohio',
+....: 'Ohio', 'Ohio'],
+....: [2001, 2000, 2000, 2000, 2001, 2002]],
+....: columns=['event1', 'event2'])
+```
+
+```{python}
+righth
+```
+
+```{python}
+pd.merge(lefth, righth, left_on = ['key1', 'key2'], right_index = True)
+```
+
+```{python}
+pd.merge(lefth, righth, left_on = ['key1', 'key2'], right_index = True, how = 'outer')
+```
+
+```{python}
+# Why this is not working?
+# pd.merge(lefth, righth, left_on = ['key1', 'key2'], left_index = True, how = 'outer')
+```
+
+```{python}
+left2 = pd.DataFrame([[1., 2.], [3., 4.], [5., 6.]],
+....: index=['a', 'c', 'e'],
+....: columns=['Ohio', 'Nevada'])
+```
+
+```{python}
+right2 = pd.DataFrame([[7., 8.], [9., 10.], [11., 12.], [13, 14]],
+....: index=['b', 'c', 'd', 'e'],
+....: columns=['Missouri', 'Alabama'])
+```
+
+```{python}
+left2
+```
+
+```{python}
+right2
+```
+
+```{python}
+pd.merge(left2, right2, how='outer', left_index=True, right_index=True)
+```
+
+```{python}
+left2.join(right2, how = 'outer')
+```
+
+```{python}
+left1.join(right1, on='key')
+```
+
+```{python}
+another = pd.DataFrame([[7., 8.], [9., 10.], [11., 12.], [16., 17.]],
+....: index=['a', 'c', 'e', 'f'],
+....: columns=['New York', 'Oregon'])
+```
+
+```{python}
+another
+```
+
+```{python}
+left2.join([right2, another])
+```
+
+```{python}
+left2.join([right2, another], how='outer')
+```
+
+### Concatenating Along an Axis
+
+```{python}
+arr = np.arange(12).reshape((3, 4))
+```
+
+```{python}
+arr
+```
+
+```{python}
+np.concatenate([arr, arr])
+```
+
+```{python}
+s1 = pd.Series([0, 1], index=['a', 'b'])
+```
+
+```{python}
+s1
+```
+
+```{python}
+s2 = pd.Series([2, 3, 4], index=['c', 'd', 'e'])
+```
+
+```{python}
+s2
+```
+
+```{python}
+s3 = pd.Series([5, 6], index=['f', 'g'])
+```
+
+```{python}
+s3
+```
+
+```{python}
+pd.concat([s1, s2, s3])
+```
+
+```{python}
+pd.concat([s1, s2, s3], axis=1)
+```
+
+```{python}
+s4 = pd.concat([s1, s3])
+```
+
+```{python}
+s4
+```
+
+```{python}
+pd.concat([s1, s4], axis = 1)
+```
+
+```{python}
+pd.concat([s1, s4], axis = 1, join = 'inner')
+```
+
+```{python}
+pd.concat([s1, s4], axis=1, join_axes=[['a', 'c', 'b', 'e']])
+```
+
+```{python}
+result = pd.concat([s1, s1, s3], keys=['one', 'two', 'three'])
+```
+
+```{python}
+result
+```
+
+```{python}
+pd.concat([s1, s1, s3])
+```
+
+```{python}
+result.unstack()
+```
+
+```{python}
+pd.concat([s1, s2, s3], axis=1, keys=['one', 'two', 'three'])
+```
+
+```{python}
+df1 = pd.DataFrame(np.arange(6).reshape(3, 2), index=['a', 'b', 'c'],
+....: columns=['one', 'two'])
+```
+
+```{python}
+df1
+```
+
+```{python}
+df2 = pd.DataFrame(5 + np.arange(4).reshape(2, 2), index=['a', 'c'],
+....: columns=['three', 'four'])
+```
+
+```{python}
+df2
+```
+
+```{python}
+pd.concat([df1, df2], axis = 1, keys = ['level1', 'level2'])
+```
+
+```{python}
+ pd.concat({'level1': df1, 'level2': df2}, axis=1)
+```
+
+```{python}
+pd.concat([df1, df2], axis=1, keys=['level1', 'level2'],
+.....: names=['upper', 'lower'])
+```
+
+```{python}
+df1 = pd.DataFrame(np.random.randn(3, 4), columns=['a', 'b', 'c', 'd'])
+```
+
+```{python}
+df1
+```
+
+```{python}
+df2 = pd.DataFrame(np.random.randn(2, 3), columns=['b', 'd', 'a'])
+```
+
+```{python}
+df2
+```
+
+```{python}
+pd.concat([df1, df2], ignore_index=True)
+```
+
+```{python}
+pd.concat([df1, df2])
+```
+
+### Combining Data with Overlap
+
+```{python}
+a = pd.Series([np.nan, 2.5, np.nan, 3.5, 4.5, np.nan],
+.....: index=['f', 'e', 'd', 'c', 'b', 'a'])
+```
+
+```{python}
+a
+```
+
+```{python}
+b = pd.Series(np.arange(len(a), dtype=np.float64),
+.....: index=['f', 'e', 'd', 'c', 'b', 'a'])
+```
+
+```{python}
+b
+```
+
+```{python}
+b[-1] = np.nan
+```
+
+```{python}
+b
+```
+
+```{python}
+np.where(pd.isnull(a), b, a)
+```
+
+```{python}
+np.where(pd.isnull(a))
+```
+
+```{python}
+ b[:-2]
+```
+
+```{python}
+a[2:]
+```
+
+```{python}
+b[:-2].combine_first(a[2:])
+```
+
+```{python}
+df1 = pd.DataFrame({'a': [1., np.nan, 5., np.nan],
+.....: 'b': [np.nan, 2., np.nan, 6.],
+.....: 'c': range(2, 18, 4)})
+```
+
+```{python}
+df1
+```
+
+```{python}
+df2 = pd.DataFrame({'a': [5., 4., np.nan, 3., 7.],
+.....: 'b': [np.nan, 3., 4., 6., 8.]})
+```
+
+```{python}
+df2
+```
+
+```{python}
+df1.combine_first(df2)
+```
+
+## 8.3 Reshaping and Pivoting
+
+
+### Reshaping with Hierarchical Indexing
+
+```{python}
+data = pd.DataFrame(np.arange(6).reshape((2, 3)),
+.....: index=pd.Index(['Ohio', 'Colorado'], name='state'),
+.....: columns=pd.Index(['one', 'two', 'three'],
+.....: name='number'))
+```
+
+```{python}
+data
+```
+
+```{python}
+result = data.stack()
+```
+
+```{python}
+result
+```
+
+```{python}
+result.unstack()
+```
+
+```{python}
+result.unstack(0)
+```
+
+```{python}
+result.unstack('state')
+```
+
+```{python}
+s1 = pd.Series([0, 1, 2, 3], index=['a', 'b', 'c', 'd'])
+```
+
+```{python}
+s2 = pd.Series([4, 5, 6], index=['c', 'd', 'e'])
+```
+
+```{python}
+data2 = pd.concat([s1, s2], keys = ['one', 'two'])
+```
+
+```{python}
+data2
+```
+
+```{python}
+# unstack may produce missing data
+data2.unstack()
+```
+
+```{python}
+df = pd.DataFrame({'left': result, 'right': result + 5},
+.....: columns=pd.Index(['left', 'right'], name='side'))
+```
+
+```{python}
+df
+```
+
+```{python}
+df.unstack('state')
+```
+
+```{python}
+df.unstack('state').stack('side')
+```
+
+### Pivoting “Long” to “Wide” Format
+
+```{python}
+data = pd.read_csv('examples/macrodata.csv')
+```
+
+```{python}
+data.head()
+```
+
+```{python}
+periods = pd.PeriodIndex(year = data.year, quarter = data.quarter, name = 'date')
+```
+
+```{python}
+periods
+```
+
+```{python}
+# periods = pd.Index(year = data.year, quarter = data.quarter, name = 'date')
+```
+
+```{python}
+columns = pd.Index(['realgdp', 'infl', 'unemp'], name = 'item')
+```
+
+```{python}
+columns
+```
+
+```{python}
+data = data.reindex(columns = columns)
+```
+
+```{python}
+data.head()
+```
+
+```{python}
+data.index = periods.to_timestamp('D', 'end')
+```
+
+```{python}
+data.head()
+```
+
+```{python}
+# Long format for multiple time series
+ldata = data.stack().reset_index().rename(columns = {0: 'value'})
+```
+
+```{python}
+ldata.head()
+```
+
+```{python}
+pivoted = ldata.pivot('date', 'item', 'value')
+```
+
+```{python}
+pivoted.head()
+```
+
+```{python}
+ldata['value2'] = np.random.randn(len(ldata))
+```
+
+```{python}
+ldata[:10]
+```
+
+```{python}
+pivoted = ldata.pivot('date', 'item')
+```
+
+```{python}
+pivoted.head()
+```
+
+```{python}
+ldata.set_index(['date', 'item']).unstack('item')[:7]
+```
+
+### Pivoting “Wide” to “Long” Format
+
+```{python}
+df = pd.DataFrame({'key': ['foo', 'bar', 'baz'],
+.....: 'A': [1, 2, 3],
+.....: 'B': [4, 5, 6],
+.....: 'C': [7, 8, 9]})
+```
+
+```{python}
+df
+```
+
+```{python}
+melted = pd.melt(df, ['key'])
+```
+
+```{python}
+melted
+```
+
+```{python}
+reshaped = melted.pivot('key', 'variable', 'value')
+```
+
+```{python}
+reshaped
+```
+
+```{python}
+reshaped.reset_index()
+```
+
+```{python}
+pd.melt(df, id_vars = ['key'], value_vars = ['A', 'B'])
+```
+
+```{python}
+pd.melt(df, value_vars = ['A', 'C'])
+```
+
+```{python}
+pd.melt(df, value_vars=['key', 'A', 'B'])
+```
+
+```{python}
 
 ```

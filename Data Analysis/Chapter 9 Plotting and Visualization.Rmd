@@ -1,0 +1,331 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+```{python}
+import pandas as pd
+import numpy as np
+# %matplotlib notebook
+import matplotlib.pyplot as plt
+```
+
+```{python}
+data = np.arange(10)
+```
+
+```{python}
+plt.plot(data)
+```
+
+```{python}
+fig = plt.figure()
+ax1 = fig.add_subplot(2,2,1)
+ax2 = fig.add_subplot(2,2,2)
+ax3 = fig.add_subplot(2,2,3)
+ax4 = fig.add_subplot(2,2,4)
+_ = ax1.hist(np.random.randn(100), bins = 20, color = 'purple', alpha = 0.9)
+ax2.scatter(np.arange(30), np.arange(30) + 20 * np.random.randn(30))
+ax3.plot(np.random.randn(50).cumsum(), 'k--')
+```
+
+```{python}
+fig, axes = plt.subplots(2, 3, sharex = True, sharey = True)
+```
+
+```{python}
+# adjust the spaces
+# plt.subplots_adjust(left=None, bottom=None, right=None, top=None,
+#                 wspace=None, hspace=None)
+```
+
+```{python}
+for i in range(2):
+    for j in range(3):
+        axes[i,j].hist(np.random.randn(500), bins = 50, color = 'k', alpha = 0.5)
+plt.subplots_adjust(wspace=0.3, hspace=0.4)
+# plt.close()
+```
+
+### Colors, Markers, and Line Styles
+
+```{python}
+# # %matplotlib notebook
+plt.figure()
+plt.plot(np.random.randn(30).cumsum(), 'ko--')
+# o is the marker
+```
+
+```{python}
+data = np.random.randn(30).cumsum()
+plt.figure()
+plt.plot(data, 'k--', label = 'Default')
+plt.plot(data, 'k-', drawstyle = 'steps-post', label = 'sp')
+plt.legend(loc = 'best')
+```
+
+### Ticks, Labels, and Legends
+
+```{python}
+fig = plt.figure()
+ax = fig.add_subplot(1,1,1)
+ax.plot(np.random.randn(1100).cumsum())
+```
+
+```{python}
+ticks = ax.set_xticks([0, 250, 500, 750, 1000])
+labels = ax.set_xticklabels(['one', 'two', 'three', 'four', 'five'], rotation = 30, fontsize = 'small')
+```
+
+```{python}
+# ax.set_title('My first matplotlib plot')
+```
+
+```{python}
+# ax.set_xlabel('Stages')
+```
+
+```{python}
+props = {
+'title': 'My first matplotlib plot',
+'xlabel': 'Stages'
+}
+ax.set(**props)
+```
+
+### Annotations and Drawing on a Subplot
+
+
+#### You can add annotations and text using the text, arrow, and annotate functions. 
+
+```{python}
+from datetime import datetime
+```
+
+```{python}
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+data = pd.read_csv('stock_px.csv', index_col=0, parse_dates=True)
+spx = data['SPX']
+spx.plot(ax=ax, style='k-')
+crisis_data = [(datetime(2007, 10, 11), 'Peak of bull market'),
+               (datetime(2008, 3, 12), 'Bear Stearns Fails'),
+               (datetime(2008, 9, 15), 'Lehman Bankruptcy')]
+for date, label in crisis_data:
+    ax.annotate(label, xy=(date, spx.asof(date) + 75),
+    xytext=(date, spx.asof(date) + 225),
+    arrowprops=dict(facecolor='black', headwidth=4, width=2,
+    headlength=4),horizontalalignment='left', verticalalignment='top')
+
+ax.set_xlim(['1/1/2003', '1/1/2012'])
+ax.set_ylim([600, 1800])
+ax.set_title('Important dates in the 2008-2009 financial crisis')
+```
+
+#### matplotlib.patches
+
+```{python}
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+rect = plt.Rectangle((0.2, 0.75), 0.4, 0.15, color = 'k', alpha = 0.3)
+circ = plt.Circle((0.7, 0.2), 0.15, color='b', alpha=0.3)
+pgon = plt.Polygon([[0.15, 0.15], [0.35, 0.4], [0.2, 0.6], [0.5, 0.8]], color='g', alpha=0.5)
+ax.add_patch(rect)
+ax.add_patch(circ)
+ax.add_patch(pgon)
+```
+
+### Saving plot to file
+
+```{python}
+plt.savefig('figpath.png', dpi=400, bbox_inches='tight')
+```
+
+### Matplotlib Configuration
+
+```{python}
+# rc method 
+# PDF page 268 for further information
+```
+
+## 9.2 Plotting with pandas and seaborn
+
+```{python}
+s = pd.Series(np.random.randn(10).cumsum(), index=np.arange(0, 100, 10))
+```
+
+```{python}
+plt.figure()
+s.plot()
+```
+
+```{python}
+df = pd.DataFrame(np.random.randn(10, 4).cumsum(0),
+....: columns=['A', 'B', 'C', 'D'],
+....: index=np.arange(0, 100, 10))
+```
+
+```{python}
+df.plot()
+```
+
+### Bar Plots
+
+```{python}
+fig, axes = plt.subplots(2,1)
+data = pd.Series(np.random.rand(16), index = list('ajfhekldplxdomnz'))
+data.plot.bar(ax = axes[0], color = 'k', alpha = 0.7)
+data.plot.barh(ax = axes[1], color = 'yellow', alpha = 0.9)
+```
+
+```{python}
+df = pd.DataFrame(np.random.rand(6, 4),
+....: index=['one', 'two', 'three', 'four', 'five', 'six'],
+....: columns=pd.Index(['A', 'B', 'C', 'D'], name='Genus'))
+```
+
+```{python}
+df.plot.bar()
+```
+
+```{python}
+df.plot.barh(stacked = True, alpha = 0.5)
+```
+
+```{python}
+tips = pd.read_csv('tips.csv')
+```
+
+```{python}
+tips.head(20)
+```
+
+```{python}
+tips[tips['size'] == 6]
+```
+
+```{python}
+party_counts = pd.crosstab(tips['day'], tips['size'])
+party_counts
+```
+
+```{python}
+party_counts = party_counts.loc[:, 2:5]
+party_counts
+```
+
+```{python}
+party_pcts = party_counts.div(party_counts.sum(axis = 1), axis=0)
+party_pcts
+```
+
+```{python}
+party_pcts.plot.bar()
+```
+
+```{python}
+import seaborn as sns
+```
+
+```{python}
+tips['tip_pct'] = tips['tip'] / (tips['total_bill'] - tips['tip'])
+```
+
+```{python}
+tips.head()
+```
+
+```{python}
+plt.figure()
+sns.barplot(x = 'tip_pct', y = 'day', data = tips, orient = 'h')
+```
+
+```{python}
+plt.figure()
+sns.barplot(x='tip_pct', y='day', hue='time', data=tips, orient='h')
+sns.set(style="whitegrid") # set different plot appeareances
+```
+
+### Histograms and Density Plots
+
+```{python}
+plt.figure()
+tips['tip_pct'].plot.hist(bins=50)
+```
+
+```{python}
+plt.figure()
+tips['tip_pct'].plot.density()
+```
+
+```{python}
+comp1 = np.random.normal(0,1, size = 200)
+comp2 = np.random.normal(10,2, size = 200)
+```
+
+```{python}
+values = pd.Series(np.concatenate([comp1, comp2]))
+```
+
+```{python}
+plt.figure()
+sns.distplot(values, bins = 50, color = 'b')
+```
+
+### Scatter or Point Plots
+
+```{python}
+macro = pd.read_csv('macrodata.csv')
+```
+
+```{python}
+data = macro[['cpi', 'm1', 'tbilrate', 'unemp']]
+```
+
+```{python}
+trans_data = np.log(data).diff().dropna()
+```
+
+```{python}
+trans_data[-5:]
+```
+
+```{python}
+plt.figure()
+sns.regplot('m1', 'unemp', data = trans_data)
+```
+
+```{python}
+plt.title('Change in log %s versus log %s' % ('m1', 'unemp'))
+```
+
+```{python}
+sns.pairplot(trans_data, diag_kind = 'kde', plot_kws = {'alpha': 0.2})
+```
+
+### Facet Grids and Categorical Data
+
+```{python}
+sns.catplot(x='day', y='tip_pct', hue='time', col='smoker', kind='bar', data=tips[tips.tip_pct < 1])
+```
+
+```{python}
+sns.catplot(x = 'day', y = 'tip_pct', row = 'time', col = 'smoker', kind = 'bar', data = tips[tips.tip_pct < 1])
+```
+
+```{python}
+sns.catplot(x = 'tip_pct', y = 'day', kind = 'box', data = tips[tips.tip_pct < 0.5])
+```
+
+```{python}
+
+```
