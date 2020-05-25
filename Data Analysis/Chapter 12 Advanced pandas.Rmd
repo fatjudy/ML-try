@@ -1,0 +1,372 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+```{python}
+import numpy as np; import pandas as pd
+```
+
+# Chapter 12 Advanced pandas
+
+
+## 12.1 Categorical Data
+
+
+### Background and Motivation
+
+```{python}
+values = pd.Series(['apple', 'orange', 'apple', 'apple'] * 2)
+```
+
+```{python}
+values
+```
+
+```{python}
+values.unique()
+```
+
+```{python}
+values.value_counts()
+```
+
+```{python}
+# Dimension table
+values = pd.Series([0,1,0,0] * 2)
+```
+
+```{python}
+dim = pd.Series(['apple', 'orange'])
+```
+
+```{python}
+dim.take(values)
+```
+
+### Categorical Type in pandas
+
+```{python}
+fruits = ['apple', 'orange', 'apple', 'apple'] * 2
+```
+
+```{python}
+N = len(fruits)
+```
+
+```{python}
+df = pd.DataFrame({'fruit': fruits,
+....: 'basket_id': np.arange(N),
+....: 'count': np.random.randint(3, 15, size=N),
+....: 'weight': np.random.uniform(0, 4, size=N)},
+....: columns=['basket_id', 'fruit', 'count', 'weight'])
+```
+
+```{python}
+df
+```
+
+```{python}
+fruit_cat = df['fruit'].astype('category')
+```
+
+```{python}
+fruit_cat
+```
+
+```{python}
+c = fruit_cat.values
+```
+
+```{python}
+type(c)
+```
+
+```{python}
+c
+```
+
+```{python}
+c.categories
+```
+
+```{python}
+c.codes
+```
+
+```{python}
+# convert a DataFrame column to categorical by assigning the converted result:
+df['fruit'] = df['fruit'].astype('category')
+```
+
+```{python}
+df.fruit
+```
+
+```{python}
+my_categories = pd.Categorical(['foo', 'bar', 'baz', 'foo', 'bar'])
+```
+
+```{python}
+categories = ['foo', 'bar', 'baz']
+```
+
+```{python}
+codes = [0,1,2,0,0,1]
+```
+
+```{python}
+my_cats_2 = pd.Categorical.from_codes(codes, categories)
+```
+
+```{python}
+my_cats_2
+```
+
+### Computation with Categories
+
+```{python}
+np.random.seed(111)
+```
+
+```{python}
+draws = np.random.randn(1000)
+```
+
+```{python}
+bins = pd.qcut(draws, 4)
+```
+
+```{python}
+bins
+```
+
+```{python}
+bins = pd.qcut(draws, 4, labels = ['Q1', 'Q2', 'Q3', 'Q4'])
+```
+
+```{python}
+bins
+```
+
+```{python}
+bins.codes[:5]
+```
+
+```{python}
+bins_1 = pd.Series(bins, name = 'quantile')
+```
+
+```{python}
+results = pd.Series(draws).groupby(bins_1).agg(['count', 'min', 'max']).reset_index()
+```
+
+```{python}
+results
+```
+
+#### Better performance with categorials
+
+```{python}
+N = 10000000
+```
+
+```{python}
+draws = pd.Series(np.random.randn(N))
+```
+
+```{python}
+labels = pd.Series(['pen', 'ruler', 'book','cake'] * (N//4))
+```
+
+```{python}
+categories = labels.astype('category')
+```
+
+```{python}
+labels.memory_usage()
+```
+
+```{python}
+categories.memory_usage()
+```
+
+GroupBy operations can be significantly faster with categoricals because the underly‐ing algorithms use the integer-based codes array instead of an array of strings.
+
+
+### Categorical Methods
+
+```{python}
+s = pd.Series(['a', 'b', 'c', 'd'] * 2)
+```
+
+```{python}
+cat_s = s.astype('category')
+```
+
+```{python}
+cat_s
+```
+
+```{python}
+# # cat provides access to categorical methods
+cat_s.cat
+```
+
+```{python}
+cat_s.cat.codes
+```
+
+```{python}
+actual_categories = ['a', 'b', 'c', 'd', 'e']
+```
+
+```{python}
+cats2 = cat_s.cat.set_categories(actual_categories)
+```
+
+```{python}
+cats2
+```
+
+```{python}
+cat_s.value_counts()
+```
+
+```{python}
+cats2.value_counts()
+```
+
+```{python}
+cat_s3 = cat_s[cat_s.isin(['a', 'b'])]
+```
+
+```{python}
+cat_s3
+```
+
+```{python}
+cat_s3.cat.remove_unused_categories()
+```
+
+#### Creating dummy variables for modeling
+
+```{python}
+cat_s = pd.Series(['a', 'b', 'c', 'd'] * 2, dtype='category')
+```
+
+```{python}
+pd.get_dummies(cat_s)
+```
+
+## 12.2 Advanced GroupBy Use
+
+```{python}
+df = pd.DataFrame({'key': ['a', 'b', 'c'] * 4, 'value': np.arange(12.)})
+```
+
+```{python}
+df
+```
+
+```{python}
+g = df.groupby('key').value
+```
+
+```{python}
+g.mean()
+```
+
+```{python}
+g.transform(lambda x: x.mean())
+```
+
+```{python}
+g.transform('mean')
+```
+
+```{python}
+g.transform(lambda x: x * 2)
+```
+
+```{python}
+g.transform(lambda x: x.rank(ascending = False))
+```
+
+```{python}
+def normalize(x):
+    return (x - x.mean()) / x.std()
+```
+
+```{python}
+g.transform(normalize)
+```
+
+```{python}
+g.apply(normalize)
+```
+
+### Grouped Time Resampling
+
+```{python}
+N = 15
+```
+
+```{python}
+times = pd.date_range('2017-05-20 00:00', freq='1min', periods=N)
+```
+
+```{python}
+df = pd.DataFrame({'time': times, 'value': np.arange(N)})
+```
+
+```{python}
+df
+```
+
+```{python}
+df.set_index('time').resample('5min').count()
+```
+
+```{python}
+df2 = pd.DataFrame({'time': times.repeat(3),
+....: 'key': np.tile(['a', 'b', 'c'], N),
+....: 'value': np.arange(N * 3.)})
+```
+
+```{python}
+df2
+```
+
+```{python}
+time_key = pd.TimeGrouper('5min')
+```
+
+```{python}
+resampled = (df2.set_index('time')
+....: .groupby(['key', time_key])
+....: .sum())
+```
+
+```{python}
+resampled
+```
+
+```{python}
+resampled.reset_index()
+```
+
+## 12.3 Techniques for Method Chaining
+
+```{python}
+# Confusing to me
+```
