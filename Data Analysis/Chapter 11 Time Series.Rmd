@@ -1,0 +1,781 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+```{python}
+import pandas as pd
+import numpy as np
+```
+
+# Chapter 11 Time Series
+
+
+## 11.1 Date and Time Data Types and Tools
+
+```{python}
+from datetime import datetime
+```
+
+```{python}
+now = datetime.now()
+```
+
+```{python}
+now.year, now.month, now.day
+```
+
+```{python}
+delta = datetime(2011, 1, 7) - datetime(2008, 5, 12)
+```
+
+```{python}
+delta
+```
+
+```{python}
+delta.days
+```
+
+```{python}
+delta.seconds
+```
+
+```{python}
+from datetime import timedelta
+```
+
+```{python}
+start = datetime(2011, 1, 7)
+```
+
+```{python}
+start + timedelta(12)
+```
+
+```{python}
+start - 2 * timedelta(12)
+```
+
+### Converting Between String and Datetime
+
+```{python}
+stamp = datetime(2011, 1, 3)
+```
+
+```{python}
+str(stamp)
+```
+
+```{python}
+stamp.strftime('%Y-%m-%d')
+```
+
+```{python}
+# From string to datetime
+value = '2011-01-03'
+datetime.strptime(value, '%Y-%m-%d')
+```
+
+```{python}
+datestrs = ['7/6/2011', '8/9/2015']
+```
+
+```{python}
+[datetime.strptime(x, '%m/%d/%Y') for x in datestrs]
+```
+
+```{python}
+datestr = 198805
+datetime.strptime(str(datestr), '%Y%m')
+```
+
+```{python}
+from dateutil.parser import parse
+```
+
+```{python}
+parse('Jan 31, 1997 10:45 PM')
+```
+
+```{python}
+parse('06/07/2011', dayfirst = True)
+```
+
+```{python}
+parse('06/07/2011', dayfirst = False)
+```
+
+```{python}
+datastrs = ['198805', '198806', '198807']
+```
+
+```{python}
+pd.to_datetime(datastrs, format='%Y%m')
+```
+
+```{python}
+# NaT: not a time
+idx = pd.to_datetime(datestrs + [None])
+```
+
+```{python}
+idx
+```
+
+## 11.2 Time Series Basics
+
+```{python}
+dates = [datetime(2011, 1, 2), datetime(2011, 1, 5),
+....: datetime(2011, 1, 7), datetime(2011, 1, 8),
+....: datetime(2011, 1, 10), datetime(2011, 1, 12)]
+```
+
+```{python}
+ts = pd.Series(np.random.randn(6), index = dates)
+```
+
+```{python}
+ts
+```
+
+```{python}
+ts.index
+```
+
+```{python}
+ts + ts[::2]
+```
+
+```{python}
+ts.index.dtype
+```
+
+### Indexing, Selection and Subsetting
+
+```{python}
+stamp = ts.index[2]
+stamp
+```
+
+```{python}
+ts[stamp]
+```
+
+```{python}
+ts.loc[stamp]
+```
+
+```{python}
+ts['20110110']
+```
+
+```{python}
+longer_ts = pd.Series(np.random.randn(1000), index = pd.date_range('1/1/2000', periods = 1000))
+```
+
+```{python}
+longer_ts
+```
+
+```{python}
+longer_ts['2001-05']
+```
+
+```{python}
+ts[datetime(2001, 11,7):]
+```
+
+```{python}
+ts
+```
+
+```{python}
+ts['1/6/2011':'1/11/2011']
+```
+
+```{python}
+ts.truncate(after = '1/9/2011')
+```
+
+```{python}
+dates = pd.date_range('1/1/2000', periods = 100, freq = 'W-WED')
+```
+
+```{python}
+long_df = pd.DataFrame(np.random.randn(100,4), index = dates, columns = ['Colorado', 'Texas', 'New York', 'Ohio'])
+```
+
+```{python}
+long_df
+```
+
+```{python}
+long_df.loc['5-2001']
+```
+
+### Time Series with Duplicated indices
+
+```{python}
+dates = pd.DatetimeIndex(['1/1/2000', '1/2/2000', '1/2/2000',
+....: '1/2/2000', '1/3/2000'])
+```
+
+```{python}
+dup_ts = pd.Series(np.arange(5), index = dates)
+```
+
+```{python}
+dup_ts
+```
+
+```{python}
+dup_ts.index.is_unique
+```
+
+```{python}
+# aggregate the data having non-unique timestamps
+grouped = dup_ts.groupby(level = 0)
+```
+
+```{python}
+grouped
+```
+
+```{python}
+grouped.mean()
+```
+
+```{python}
+grouped.count()
+```
+
+## 11.3 Date Ranges, Frequencies, and Shifting
+
+```{python}
+ts
+```
+
+```{python}
+resampler = ts.resample('D')
+```
+
+```{python}
+resampler
+```
+
+### Generating Date Ranges
+
+```{python}
+index = pd.date_range('2012-04-01', '2012-06-01', periods = 14)
+```
+
+```{python}
+index
+```
+
+### Frequencies and Date Offsets
+
+```{python}
+from pandas.tseries.offsets import Hour, Minute
+```
+
+```{python}
+pd.date_range('2000-01-01', '2001-01-03 23:59', freq = '4h')
+```
+
+```{python}
+# Get the third Friday of each month
+rng = pd.date_range('2012-01-01', '2012-09-01', freq='WOM-3FRI')
+```
+
+```{python}
+rng
+```
+
+### Sgifting Data (leading and Lagging)
+
+```{python}
+ts = pd.Series(np.random.randn(4), index = pd.date_range('1/1/2000', periods = 4, freq = 'M'))
+```
+
+```{python}
+ts
+```
+
+```{python}
+ts.shift(2)
+```
+
+```{python}
+ts.shift(-2)
+```
+
+```{python}
+# percentage change
+ts/ts.shift(-1) -1 
+```
+
+```{python}
+ts.shift(2, freq = 'M')
+```
+
+### Shirting dates with offsets
+
+```{python}
+from pandas.tseries.offsets import Day, MonthEnd
+```
+
+```{python}
+now + 3*Day()
+```
+
+```{python}
+now + MonthEnd()
+```
+
+```{python}
+now + MonthEnd(2)
+```
+
+```{python}
+offset = MonthEnd()
+```
+
+```{python}
+offset.rollback(now)
+```
+
+```{python}
+offset.rollforward(now)
+```
+
+```{python}
+ts = pd.Series(np.random.randn(20), index = pd.date_range('1/15/2000', periods = 20, freq = '4d'))
+```
+
+```{python}
+ts
+```
+
+```{python}
+ts.groupby(offset.rollforward).mean()
+```
+
+```{python}
+ts.resample('M').mean()
+```
+
+## 11.4 Time Zone Handling
+
+```{python}
+import pytz
+```
+
+```{python}
+pytz.common_timezones[-5:]
+```
+
+```{python}
+tz = pytz.timezone('America/New_York')
+```
+
+```{python}
+tz
+```
+
+### Time Zone Localization and Conversion
+
+```{python}
+rng = pd.date_range('3/9/2012 9:30', periods = 6, freq = 'D')
+```
+
+```{python}
+ts = pd.Series(np.random.randn(len(rng)), index = rng)
+```
+
+```{python}
+ts
+```
+
+```{python}
+print(ts.index.tz)
+```
+
+```{python}
+pd.date_range('3/9/2012 9:30', periods = 6, freq = 'D', tz = 'UTC')
+```
+
+```{python}
+ts_utc = ts.tz_localize('UTC')
+```
+
+```{python}
+ts_utc
+```
+
+```{python}
+ts_utc.index
+```
+
+```{python}
+ts_utc.tz_convert('America/New_York')
+```
+
+## 11.5 Periods and Period Arithmetic
+
+```{python}
+p = pd.Period(2007, freq='A-DEC')
+```
+
+```{python}
+p
+```
+
+```{python}
+p + 5
+```
+
+```{python}
+values = ['2001Q3', '2002Q2', '2003Q1']
+```
+
+```{python}
+index = pd.PeriodIndex(values, freq = 'Q-DEC')
+```
+
+```{python}
+index
+```
+
+### Period Frequency Conversion
+
+```{python}
+p.asfreq('M', how = 'start')
+```
+
+```{python}
+rng = pd.period_range('2006', '2009', freq = 'A-DEC')
+```
+
+```{python}
+ts = pd.Series(np.random.randn(len(rng)), index = rng)
+```
+
+```{python}
+ts
+```
+
+```{python}
+ts.asfreq('M', how = 'start')
+```
+
+```{python}
+ts.asfreq('M', how = 'end')
+```
+
+### Quarterly Period Frequencies
+
+```{python}
+p = pd.Period('2012Q4', freq='Q-JAN')
+```
+
+```{python}
+p
+```
+
+```{python}
+p.asfreq('D', 'start')
+```
+
+```{python}
+p.asfreq('D', 'end')
+```
+
+```{python}
+# get the timestamp at 4 PM on the second-to-last business day of the quarter
+p4pm = (p.asfreq('B', 'e') - 1).asfreq('T', 's') + 16 * 60
+```
+
+```{python}
+p4pm
+```
+
+```{python}
+p4pm.to_timestamp()
+```
+
+```{python}
+rng = pd.period_range('2011Q3', '2012Q4', freq = 'Q-JAN')
+```
+
+```{python}
+ts = pd.Series(np.arange(len(rng)), index = rng)
+```
+
+```{python}
+ts
+```
+
+### Converting Timestamps to Periods (and Back)
+
+```{python}
+rng = pd.date_range('2000-01-01', periods=3, freq='M')
+```
+
+```{python}
+ts = pd.Series(np.random.randn(3), index=rng)
+```
+
+```{python}
+ts
+```
+
+```{python}
+pts = ts.to_period()
+```
+
+```{python}
+pts
+```
+
+```{python}
+# convert back
+# to_timestamp()
+```
+
+### Creating a PeriodIndex from Arrays
+
+```{python}
+data = pd.read_csv('macrodata.csv')
+```
+
+```{python}
+data.year
+```
+
+```{python}
+data.quarter
+```
+
+```{python}
+index = pd.PeriodIndex(year = data.year, quarter = data.quarter, freq = 'Q-DEC')
+```
+
+```{python}
+index
+```
+
+```{python}
+data.index = index
+```
+
+```{python}
+data.infl
+```
+
+## 11.6 Resampling and Frequency Conversion
+
+```{python}
+# resampling: the proces  of converting a ts from one frequency to another
+```
+
+```{python}
+rng = pd.date_range('2000-01-01', periods = 100, freq = 'D')
+```
+
+```{python}
+ts = pd.Series(np.random.randn(len(rng)), index = rng)
+```
+
+```{python}
+ts
+```
+
+```{python}
+ts.resample('M')
+```
+
+```{python}
+ts.resample('M').mean()
+```
+
+```{python}
+ts.resample('M', kind='period').mean()
+```
+
+### Downsampling
+
+```{python}
+rng = pd.date_range('2000-01-01', periods = 12, freq = 'T')
+```
+
+```{python}
+ts = pd.Series(np.arange(12), index = rng)
+```
+
+```{python}
+ts
+```
+
+```{python}
+ts.resample('5min').sum()
+```
+
+```{python}
+ts.resample('5min', closed = 'right').sum()
+```
+
+```{python}
+ts.resample('5min', closed = 'right', label = 'right').sum()
+```
+
+```{python}
+ts.resample('5min', closed = 'right', label = 'right', loffset = '-1s').sum()
+```
+
+### Open-High-Low-Close (OHLC) resampling
+
+```{python}
+# open: first, close: last, high: max, low: min
+ts.resample('5min').ohlc()
+```
+
+### Upsampling and Interpolation
+
+```{python}
+frame = pd.DataFrame(np.random.randn(2, 4),
+.....: index=pd.date_range('1/1/2000', periods=2,
+.....: freq='W-WED'),
+.....: columns=['Colorado', 'Texas', 'New York', 'Ohio'])
+```
+
+```{python}
+frame
+```
+
+```{python}
+df_daily = frame.resample('D').asfreq()
+```
+
+```{python}
+df_daily
+```
+
+```{python}
+frame.resample('D').ffill()
+```
+
+```{python}
+frame.resample('D').ffill(limit = 2)
+```
+
+```{python}
+frame.resample('W-THU').ffill()
+```
+
+### Resampling with Periods
+
+```{python}
+frame = pd.DataFrame(np.random.randn(24, 4), 
+        index=pd.period_range('1-2000', '12-2001', 
+        freq='M'), 
+        columns=['Colorado', 'Texas', 'New York', 'Ohio'])
+
+```
+
+```{python}
+frame
+```
+
+```{python}
+annual_frame = frame.resample('A-DEC').mean()
+```
+
+```{python}
+annual_frame
+```
+
+## 11.7 Moving Window Functions
+
+```{python}
+close_px_all = pd.read_csv('stock_px.csv', parse_dates = True, index_col = 0)
+```
+
+```{python}
+close_px = close_px_all[['AAPL', 'MSFT', 'XOM']]
+```
+
+```{python}
+close_px
+```
+
+```{python}
+px = close_px.resample('B').ffill()
+```
+
+```{python}
+px
+```
+
+```{python}
+px.AAPL.plot()
+```
+
+```{python}
+px.AAPL.rolling(250).mean().plot()
+```
+
+```{python}
+appl_std250 = close_px.AAPL.rolling(250, min_periods=10).std()
+```
+
+```{python}
+appl_std250
+```
+
+```{python}
+expanding_mean = appl_std250.expanding().mean()
+```
+
+```{python}
+close_px.rolling(60).mean().plot(logy=True)
+```
+
+```{python}
+ close_px.rolling('20D').mean()
+```
+
+```{python}
+import matplotlib as plt
+```
+
+```{python}
+aapl_px = close_px.AAPL['2006':'2007']
+ma60 = aapl_px.rolling(30, min_periods=20).mean()
+ewma60 = aapl_px.ewm(span=30).mean()
+ma60.plot(style='k--', label='Simple MA')
+ewma60.plot(style='k-', label='EW MA')
+plt.legend()
+```
+
+### Exponentially Weighted Functions
+
+
+### User-Defined Moving Window Functions
+
+
+#### Might be useful for me in doing oos, check page 361
+
+```{python}
+
+```
