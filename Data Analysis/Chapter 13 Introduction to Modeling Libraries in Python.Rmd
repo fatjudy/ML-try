@@ -1,0 +1,409 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+# Chapter 13 Introduction to Modeling Libraries in Python
+
+```{python}
+import numpy as np; import pandas as pd
+```
+
+```{python}
+data = pd.DataFrame({'x0': [1, 2, 3, 4, 5],
+                     'x1': [0.01, -0.01, 0.25, -4.1, 0.],
+                     'y': [-1.5, 0., 3.6, 1.3, -2.]})
+```
+
+```{python}
+data
+```
+
+```{python}
+data.values
+```
+
+```{python}
+df = pd.DataFrame(data.values, columns = ['one', 'two', 'three'])
+```
+
+```{python}
+df
+```
+
+```{python}
+df2 = df.copy()
+```
+
+```{python}
+df2['strings'] = ['a', 'b', 'c', 'd', 'e']
+```
+
+```{python}
+df2
+```
+
+```{python}
+df2.values
+```
+
+```{python}
+# Subset of columns
+multi_cols = ['one', 'strings']
+```
+
+```{python}
+df2.loc[:,multi_cols]
+```
+
+```{python}
+data['category'] = pd.Categorical(['a', 'b', 'a', 'a', 'b'], categories = ['a', 'b'])
+```
+
+```{python}
+data
+```
+
+```{python}
+dummies = pd.get_dummies(data.category)
+```
+
+```{python}
+dummies
+```
+
+```{python}
+data_with_dummies = data.join(dummies).drop('category', axis = 1)
+```
+
+```{python}
+data_with_dummies
+```
+
+```{python}
+data = pd.DataFrame({
+....: 'x0': [1, 2, 3, 4, 5],
+....: 'x1': [0.01, -0.01, 0.25, -4.1, 0.],
+....: 'y': [-1.5, 0., 3.6, 1.3, -2.]})
+```
+
+```{python}
+data
+```
+
+```{python}
+pip install patsy
+```
+
+```{python}
+import patsy
+```
+
+```{python}
+y,X = patsy.dmatrices('y~ x0 + x1', data) # add +0 to supress intercept
+```
+
+```{python}
+y
+```
+
+```{python}
+X
+```
+
+```{python}
+y, X = patsy.dmatrices('y ~ x0 + np.log(np.abs(x1) + 1)', data)
+```
+
+```{python}
+y, X = patsy.dmatrices('y ~ standardize(x0) + center(x1)', data)
+```
+
+```{python}
+# use I() to specify two columns as one variable
+y, X = patsy.dmatrices('y ~ I(x0 + x1)', data)
+```
+
+```{python}
+X
+```
+
+```{python}
+data = pd.DataFrame({
+....: 'key1': ['a', 'a', 'b', 'b', 'a', 'b', 'a', 'b'],
+....: 'key2': [0, 1, 0, 1, 0, 1, 0, 0],
+....: 'v1': [1, 2, 3, 4, 5, 6, 7, 8],
+....: 'v2': [-1, 0, 2.5, -0.5, 4.0, -1.2, 0.2, -1.7]
+....: })
+```
+
+```{python}
+data
+```
+
+```{python}
+# When using non-numeric terms, like key1, they converted to dummy variables by default
+y, X = patsy.dmatrices('v2 ~ key1', data)
+```
+
+```{python}
+X
+```
+
+```{python}
+y,X = patsy.dmatrices('v2 ~ key1 + 0', data)
+```
+
+```{python}
+X
+```
+
+```{python}
+# Numeric columns can be interpreted as categorical with C function
+y, X = patsy.dmatrices('v2 ~ C(key2)', data)
+```
+
+```{python}
+X
+```
+
+```{python}
+data['key2'] = data['key2'].map({0: 'zero', 1: 'one'})
+```
+
+```{python}
+data
+```
+
+```{python}
+y, X = patsy.dmatrices('v2 ~ key1 + key2', data)
+```
+
+```{python}
+X
+```
+
+```{python}
+y, X = patsy.dmatrices('v2 ~ key1 + key2 + key1:key2', data)
+```
+
+```{python}
+X
+```
+
+## 13.3 Introduction to statsmodels
+
+
+### Estimating Linear Models
+
+```{python}
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+```
+
+```{python}
+def dnorm(mean, variance, size=1):
+    if isinstance(size, int):
+        size = size,
+    return mean + np.sqrt(variance) * np.random.randn(*size)
+```
+
+```{python}
+N = 100
+X = np.c_[dnorm(0, 0.4, size=N),
+dnorm(0, 0.6, size=N),
+dnorm(0, 0.2, size=N)]
+```
+
+```{python}
+eps = dnorm(0, 0.1, size=N)
+beta = [0.1, 0.3, 0.5]
+```
+
+```{python}
+y = np.dot(X, beta) + eps
+```
+
+```{python}
+X_model = sm.add_constant(X)
+```
+
+```{python}
+model = sm.OLS(y, X)
+```
+
+```{python}
+result = model.fit()
+```
+
+```{python}
+print(result.summary())
+```
+
+```{python}
+data = pd.DataFrame(X, columns=['col0', 'col1', 'col2'])
+```
+
+```{python}
+data
+```
+
+```{python}
+data['y'] = y
+```
+
+```{python}
+results = smf.ols('y ~ col0 + col1 + col2', data=data).fit()
+```
+
+```{python}
+results.predict(data[:5])
+```
+
+### Estimating Time Series Processes
+
+```{python}
+init_x = 4
+values = [init_x, init_x]
+```
+
+```{python}
+values[-1]
+```
+
+```{python}
+values[-2]
+```
+
+```{python}
+b0 = 0.8
+b1 = -0.4
+noise = dnorm(0, 0.1, N)
+for i in range(N):
+    new_x = values[-1] * b0 + values[-2] * b1 + noise[i]
+    values.append(new_x)
+```
+
+```{python}
+maxlag = 5
+```
+
+```{python}
+model = sm.tsa.AR(values)
+```
+
+```{python}
+model
+```
+
+```{python}
+results = model.fit(maxlag)
+```
+
+```{python}
+results.params
+```
+
+## 13.4 Introduction to scikit-learn
+
+```{python}
+train = pd.read_csv('train.csv')
+```
+
+```{python}
+test = pd.read_csv('test.csv')
+```
+
+```{python}
+train[:4]
+```
+
+```{python}
+train.isnull().sum()
+```
+
+```{python}
+test.isnull().sum()
+```
+
+```{python}
+# Use Age as a predictor
+train['Age'] = train['Age'].fillna(train['Age'].median())
+```
+
+```{python}
+test['Age'] = test['Age'].fillna(train['Age'].median())
+```
+
+```{python}
+train['IsFemale'] = (train['Sex'] == 'female').astype(int)
+```
+
+```{python}
+test['IsFemale'] = (test['Sex'] == 'female').astype(int)
+```
+
+```{python}
+predictors = ['Pclass', 'IsFemale', 'Age']
+```
+
+```{python}
+X_train = train[predictors].values
+```
+
+```{python}
+y_train = train['Survived'].values
+```
+
+```{python}
+X_train[:5]
+```
+
+```{python}
+X_test = test[predictors].values
+```
+
+```{python}
+from sklearn.linear_model import LogisticRegression
+```
+
+```{python}
+model = LogisticRegression()
+```
+
+```{python}
+model.fit(X_train, y_train)
+```
+
+```{python}
+y_predict = model.predict(X_test)
+```
+
+```{python}
+test[:5]
+```
+
+```{python}
+y_predict
+```
+
+```{python}
+y_true = test['Survived'].values
+```
+
+```{python}
+(y_true == y_predict).mean()
+```
+
+```{python}
+
+```
