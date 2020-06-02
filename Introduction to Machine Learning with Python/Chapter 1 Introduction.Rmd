@@ -1,0 +1,292 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+```{python}
+pip install scikit-learn
+```
+
+```{python}
+pip install mglearn
+```
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import mglearn
+```
+
+```{python}
+import scipy as sp
+print("SciPy version: {}".format(sp.__version__))
+import IPython
+print("IPython version: {}".format(IPython.__version__))
+import sklearn
+print("scikit-learn version: {}".format(sklearn.__version__))
+```
+
+```{python}
+from sklearn.datasets import load_iris
+```
+
+```{python}
+iris_dataset = load_iris()
+```
+
+```{python}
+print("Keys of iris_dataset: \n{}".format(iris_dataset.keys()))
+```
+
+```{python}
+print(iris_dataset['DESCR'][:200])
+```
+
+```{python}
+print("Feature names: \n{}".format(iris_dataset['feature_names']))
+```
+
+```{python}
+print("Shape of data: \n{}".format(iris_dataset['data'].shape))
+```
+
+```{python}
+print("Type of data: \n{}".format(type(iris_dataset)))
+```
+
+```{python}
+from sklearn.model_selection import train_test_split
+```
+
+```{python}
+X_train, X_test, y_train, y_test = train_test_split(iris_dataset['data'], iris_dataset['target'], random_state = 0)
+```
+
+```{python}
+print("X_train shape: {}".format(X_train.shape))
+```
+
+```{python}
+# Create dataframe from data in X_train
+# Label the columns using the feature names
+df = pd.DataFrame(X_train, columns = iris_dataset['feature_names'])
+```
+
+```{python}
+df.head()
+```
+
+```{python}
+grr = pd.plotting.scatter_matrix(df, c = y_train, figsize = (15, 15), marker = 'x', 
+                                 hist_kwds = {'bins': 30}, s = 30, alpha = .5, cmap = mglearn.cm3)
+```
+
+## K-nearest model
+
+```{python}
+from sklearn.neighbors import KNeighborsClassifier
+```
+
+```{python}
+knn = KNeighborsClassifier(n_neighbors = 1)
+```
+
+```{python}
+knn.fit(X_train, y_train)
+```
+
+### Making predictions
+
+```{python}
+X_new = np.array([[5, 2.9, 1, 0.2]])
+# X_new = np.array([5, 2.9, 1, 0.2])
+```
+
+```{python}
+print("X_new shape: {}".format(X_new.shape))
+```
+
+```{python}
+prediction = knn.predict(X_new)
+```
+
+```{python}
+print("Prediction: {}".format(prediction))
+```
+
+```{python}
+print("Predicted target name: {}".format(iris_dataset['target_names'][prediction]))
+```
+
+```{python}
+iris_dataset['target_names']
+```
+
+### Evaluating the model
+
+```{python}
+y_pred = knn.predict(X_test)
+```
+
+```{python}
+print("Test set score: {:.2f}".format(np.mean(y_pred == y_test)))
+```
+
+```{python}
+knn.score(X_test, y_test)
+```
+
+```{python}
+np.array(y_pred == y_test)
+```
+
+# Chapter 2: Supervised Learning
+
+```{python}
+X, y = mglearn.datasets.make_forge()
+```
+
+```{python}
+import matplotlib as plt
+```
+
+```{python}
+# %matplotlib inline
+```
+
+```{python}
+plt.pyplot.scatter(X[:,0], X[:,1], c = y)
+```
+
+## Real dataset
+
+```{python}
+from sklearn.datasets import load_breast_cancer
+```
+
+```{python}
+cancer = load_breast_cancer()
+```
+
+```{python}
+print("cancer.keys: \n{}".format(cancer.keys()))
+```
+
+```{python}
+print("Feature names: \n{}".format(cancer.feature_names))
+```
+
+```{python}
+print("Data shape: \n{}".format(cancer.data.shape))
+```
+
+```{python}
+a = np.array([0,1,0,0,1,1,0,1,0])
+np.bincount(a)
+```
+
+```{python}
+print("Sample counts per class: \n{}".format({n: v for n, v in zip(cancer.target_names, np.bincount(cancer.target))}))
+```
+
+```{python}
+from sklearn.datasets import load_boston
+```
+
+```{python}
+boston = load_boston()
+```
+
+```{python}
+print("Data shape: \n{}".format(boston.data.shape))
+```
+
+```{python}
+X, y = mglearn.datasets.load_extended_boston()
+print("X.shape: {}".format(X.shape))
+```
+
+### K-Nearest Neighbors
+
+```{python}
+X_train, X_test, y_train, y_test = train_test_split(cancer.data, cancer.target, stratify = cancer.target, random_state = 22)
+```
+
+```{python}
+training_accuracy = []
+test_accuracy = []
+```
+
+```{python}
+neighbors_setting = np.arange(1,15)
+```
+
+```{python}
+for n_neighbors in neighbors_setting:
+    clf = KNeighborsClassifier(n_neighbors = n_neighbors)
+    clf.fit(X_train, y_train)
+    training_accuracy.append(clf.score(X_train, y_train))
+    test_accuracy.append(clf.score(X_test, y_test))
+```
+
+```{python}
+import matplotlib.pyplot as plt
+```
+
+```{python}
+plt.plot(neighbors_setting, training_accuracy, label = 'training accuracy')
+plt.plot(neighbors_setting, test_accuracy, label = 'test accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel("n_neighbors")
+plt.legend()
+```
+
+```{python}
+# k-nearesy neighbors algorithm for regression
+```
+
+```{python}
+mglearn.plots.plot_knn_regression(n_neighbors=1)
+```
+
+```{python}
+from sklearn.neighbors import KNeighborsRegressor
+```
+
+```{python}
+X, y = mglearn.datasets.make_wave(n_samples=40)
+```
+
+```{python}
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+```
+
+```{python}
+reg = KNeighborsRegressor(n_neighbors=3)
+```
+
+```{python}
+reg.fit(X_train, y_train)
+```
+
+```{python}
+print("Test set predictions:\n{}".format(reg.predict(X_test)))
+```
+
+```{python}
+print("Test set R^2: {:.2f}".format(reg.score(X_test, y_test)))
+```
+
+```{python}
+
+```
