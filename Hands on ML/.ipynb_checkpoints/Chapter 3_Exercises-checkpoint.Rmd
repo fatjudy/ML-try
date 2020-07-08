@@ -1,0 +1,71 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+```{python}
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.neighbors import KNeighborsClassifier
+```
+
+```{python}
+from sklearn.datasets import fetch_openml
+```
+
+```{python}
+mnist = fetch_openml("MNIST_784")
+```
+
+```{python}
+X, y = mnist['data'], mnist['target']
+```
+
+```{python}
+X.shape, y.shape
+```
+
+```{python}
+import matplotlib
+```
+
+```{python}
+import matplotlib.pyplot as plt
+```
+
+```{python}
+plt.imshow(X[300].reshape(28,28), cmap = matplotlib.cm.binary)
+```
+
+```{python}
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 20)
+```
+
+```{python}
+neighbors = KNeighborsClassifier()
+```
+
+```{python}
+neighbors.fit(X_train, y_train)
+```
+
+```{python}
+neighbors.predict([X[300]])
+```
+
+```{python}
+cross_val_score(neighbors, X_train, y_train, cv = 3, scoring = "accuracy")
+# Three numbers means score for 3 different folds
+```
+
+```{python}
+
+```
